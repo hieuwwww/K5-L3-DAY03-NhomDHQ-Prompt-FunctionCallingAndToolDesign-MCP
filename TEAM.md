@@ -4,7 +4,7 @@
 
 ## Thông tin nhóm
 
-- Tên nhóm: (nhóm tự điền)
+- Tên nhóm: DHQ
 - Bài lab: Day 03 — Research Agent Tool Eval
 
 ## Thành viên
@@ -12,7 +12,7 @@
 | STT | Họ và tên | MSSV | Vai trò trong nhóm | Tài khoản GitHub |
 |---:|---|---|---|---|
 | 1 | Bùi Quang Hiếu | 2A202603639 | Agent & eval | (tự điền) |
-| 2 | (tự điền) | (tự điền) | Tool & kiểm thử | (tự điền) |
+| 2 | Nguyễn Công Quân | 2A202603675 | Tool & kiểm thử | nguyencongquana2 |
 | 3 | Nguyễn Văn Đăng | 2A202603371 | UI & demo | (tự điền) |
 
 ## Phân công công việc
@@ -20,7 +20,7 @@
 | Phụ trách | Công việc chính | Sản phẩm / bằng chứng |
 |---|---|---|
 | Bùi Quang Hiếu — Agent & eval | Cấu hình provider; chạy baseline `v0`; phân tích các case lỗi; tối ưu prompt và tool descriptions theo từng giả thuyết, chạy lần lượt `v1`, `v2`, `v3`. | `artifacts/system_prompt.md`, `artifacts/tools.yaml`, `artifacts/version_log.csv`, `runs/*.json` |
-| Thành viên 2 — Tool & kiểm thử | Viết ít nhất một tool mới và đăng ký tool; viết tối thiểu 3 unit test cho tool mới; soạn 10 eval case gồm 5 single-turn và 5 multi-turn; giữ `pytest` xanh. | `tools/<tên_tool>/tool.py`, `TOOL.md`, `tools/__init__.py`, `tests/`, `data/eval_group.json` |
+| Nguyễn Công Quân — Tool & kiểm thử | Viết ít nhất một tool mới và đăng ký tool; viết tối thiểu 3 unit test cho tool mới; soạn 10 eval case gồm 5 single-turn và 5 multi-turn; giữ `pytest` xanh. | `tools/<tên_tool>/tool.py`, `TOOL.md`, `tools/__init__.py`, `tests/`, `data/eval_group.json` |
 | Nguyễn Văn Đăng — UI & demo | Dựng UI Streamlit hoặc Vercel; chuẩn bị câu hỏi demo; chạy ít nhất 3 lượt chat live; viết Phần A của report trước 16:30 và Phần B sau khi có run log. | UI và link dùng thử, `transcripts/*.transcript.json`, `artifacts/REPORT.md` |
 
 ## Phối hợp theo checkpoint
@@ -28,8 +28,8 @@
 | Mốc | Người chính | Việc cần bàn giao |
 |---|---|---|
 | 15:00 — Baseline và UI | Hiếu, Đăng | Preflight, run `v0`; bản UI đầu tiên |
-| 15:30 — Tool mới và `v1` | Thành viên 2, Hiếu | Tên/schema tool mới cho Hiếu đồng bộ `tools.yaml`; run `v1` |
-| 16:00 — Team eval và `v2` | Thành viên 2, Hiếu | `eval_group.json`; run `v2` |
+| 15:30 — Tool mới và `v1` | Quân, Hiếu | Tên/schema tool mới cho Hiếu đồng bộ `tools.yaml`; run `v1` |
+| 16:00 — Team eval và `v2` | Quân, Hiếu | `eval_group.json`; run `v2` |
 | 16:30 — Demo | Đăng | UI hoạt động, `REPORT.md` Phần A và câu hỏi mẫu |
 | 17:30 — `v3` và report chi tiết | Hiếu, Đăng | Metric/run log `v0`–`v3` cho Phần B |
 
@@ -55,7 +55,7 @@ Mỗi thành viên tự cập nhật mục của mình; chỉ ghi đóng góp v�
 
 - (tự bổ sung sau khi hoàn thành lab)
 
-### ThanhVien2-MSSV
+### NguyenCongQuan-2A202603675
 
 **Phần việc phụ trách:**
 
@@ -63,15 +63,22 @@ Mỗi thành viên tự cập nhật mục của mình; chỉ ghi đóng góp v�
 
 **Đóng góp cụ thể:**
 
-- (thành viên tự điền)
+- Xây dựng tool `deduplicate` để loại kết quả nghiên cứu trùng theo URL chuẩn hóa hoặc tiêu đề; hỗ trợ ba chiến lược `url_or_title`, `url`, `title` và xử lý input lỗi bằng error dict.
+- Đăng ký tool trong registry và khai báo schema/description để agent phân biệt thao tác làm sạch dữ liệu với tìm kiếm hoặc định dạng.
+- Hoàn thiện toàn bộ unit-test stub cho các tool có sẵn và viết 3 test cho `deduplicate` (happy path, input sai kiểu, strategy không hợp lệ).
+- Soạn 10 team eval case gồm 5 single-turn và 5 multi-turn, bao phủ routing, argument, boundary và missing-info của tool mới.
+- Thiết lập môi trường kiểm thử cục bộ và xác minh toàn bộ test suite đạt `84 passed, 0 failed, 0 skipped`.
 
 **Bằng chứng:**
 
-- (thành viên tự điền)
+- `starter_v0/tools/deduplicate/tool.py`, `starter_v0/tools/deduplicate/TOOL.md`.
+- `starter_v0/tools/__init__.py`, `starter_v0/artifacts/tools.yaml`.
+- `starter_v0/tests/test_tools_todo.py`, `starter_v0/data/eval_group.json`.
+- Kết quả `python -m pytest -q`: `84 passed in 0.37s`.
 
 **Điều mình học được từ phần nhóm:**
 
-- (thành viên tự điền)
+- Phân biệt model eval (đo quyết định routing/arguments) với unit test (đo hành vi code của tool), đồng thời giữ tên và schema tool đồng bộ giữa declaration, registry, tài liệu và eval cases.
 
 ### NguyenVanDang-2A202603371
 

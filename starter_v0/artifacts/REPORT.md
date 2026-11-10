@@ -7,8 +7,8 @@
 ## Team
 
 - Team: NhomDHQ
-- Members: Bùi Quang Hiếu (Agent & eval), (Thành viên 2 — Tool & kiểm thử), Nguyễn Văn Đăng (UI & demo)
-- Provider/model: DeepSeek · `deepseek-flash` (UI demo + chat live; eval: Hiếu cập nhật nếu dùng provider khác)
+- Members: Bùi Quang Hiếu (Agent & eval), Nguyễn Công Quân (Tool & kiểm thử), Nguyễn Văn Đăng (UI & demo)
+- Provider/model: eval `v0`–`v3`: OpenRouter · `openai/gpt-4o-mini`; UI demo + chat live: DeepSeek · `deepseek-flash`
 
 ---
 
@@ -46,7 +46,7 @@ UI hiển thị tool agent đã chọn, args đã truyền và kết quả của
 | policy | Tra cứu policy nội bộ công ty (nguồn, trích dẫn, bảo mật, đăng bài, dùng tool) | không |
 | papers | Tìm paper trên arXiv | không |
 | paper_text | Tải PDF arXiv và trích text vài trang đầu | không |
-| (tool mới, thành viên 2 điền) |  | có |
+| deduplicate | Loại kết quả trùng trong danh sách đã thu thập, theo URL chuẩn hoá hoặc tiêu đề | có |
 
 ## A3. Câu hỏi mẫu để thử
 

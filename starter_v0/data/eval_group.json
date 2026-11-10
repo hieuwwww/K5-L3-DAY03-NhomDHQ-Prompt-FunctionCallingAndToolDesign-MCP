@@ -1,7 +1,108 @@
 {
-  "dataset_id": "day04_v2_research_group",
+  "dataset_id": "day04_v2_research_group_dhq",
   "dataset_role": "group",
-  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "description": "10 case của nhóm DHQ: 5 single-turn và 5 multi-turn, tập trung vào routing/arguments/boundary của tool deduplicate do Nguyễn Công Quân phụ trách.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_deduplicate_default",
+      "phase": "B", "suite": "group",
+      "query": "Tôi có ba kết quả: [{\"title\":\"AI News\",\"url\":\"https://example.com/ai?utm_source=x\"},{\"title\":\"Bản sao\",\"url\":\"https://example.com/ai\"},{\"title\":\"Robotics\",\"url\":\"https://example.org/robot\"}]. Hãy bỏ các kết quả trùng nhau.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "deduplicate", "args": {}}]},
+      "metadata": {"skill": "deduplicate_default", "difficulty": "easy", "what_it_tests": "Danh sách đã có và yêu cầu bỏ trùng phải route tới deduplicate, không gọi web."}
+    },
+    {
+      "id": "G02_deduplicate_by_url",
+      "phase": "B", "suite": "group",
+      "query": "Làm sạch danh sách nguồn này và chỉ coi là trùng khi URL giống nhau: [{\"title\":\"A\",\"url\":\"https://a.vn/post\"},{\"title\":\"A\",\"url\":\"https://b.vn/post\"}].",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "deduplicate", "args": {"strategy": "url"}}]},
+      "metadata": {"skill": "deduplicate_url_strategy", "difficulty": "medium", "what_it_tests": "Cụm 'chỉ URL' phải map thành strategy=url."}
+    },
+    {
+      "id": "G03_deduplicate_by_title",
+      "phase": "B", "suite": "group",
+      "query": "Hai trang đăng cùng tiêu đề nhưng URL khác nhau. Hãy loại bản trùng chỉ theo tiêu đề trong danh sách [{\"title\":\"GPT mới\",\"url\":\"https://a.vn/1\"},{\"title\":\"GPT mới\",\"url\":\"https://b.vn/2\"}].",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "deduplicate", "args": {"strategy": "title"}}]},
+      "metadata": {"skill": "deduplicate_title_strategy", "difficulty": "medium", "what_it_tests": "Cụm 'chỉ theo tiêu đề' phải map thành strategy=title."}
+    },
+    {
+      "id": "G04_search_not_deduplicate",
+      "phase": "B", "suite": "group",
+      "query": "Tìm trên web các tin AI mới trong hôm nay; tôi chưa có danh sách kết quả.",
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"topic": "news", "timeframe": "day"}}]},
+      "metadata": {"skill": "deduplicate_boundary_search", "difficulty": "medium", "what_it_tests": "Chưa có items và cần tìm dữ liệu mới thì dùng lookup, không dùng deduplicate."}
+    },
+    {
+      "id": "G05_format_not_deduplicate",
+      "phase": "B", "suite": "group",
+      "query": "Danh sách này đã được kiểm tra là không trùng: [{\"title\":\"Tin A\",\"url\":\"https://a.vn\"},{\"title\":\"Tin B\",\"url\":\"https://b.vn\"}]. Chỉ trình bày thành danh sách bullet.",
+      "failure_type": "unnecessary_tool",
+      "expect": {"tool_calls": [{"name": "format", "args": {"template": "bullets"}}]},
+      "metadata": {"skill": "deduplicate_boundary_format", "difficulty": "medium", "what_it_tests": "Đã xác nhận không trùng và chỉ cần trình bày thì dùng format, không gọi deduplicate."}
+    },
+    {
+      "id": "GM01_carry_items_then_deduplicate",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tôi có hai nguồn: https://example.com/post?utm_campaign=lab và https://example.com/post."},
+        {"role": "user", "content": "Hai URL đó là toàn bộ danh sách, không cần tìm thêm."},
+        {"role": "user", "content": "Hãy loại bản trùng giúp tôi."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "deduplicate", "args": {}}]},
+      "metadata": {"skill": "multiturn_deduplicate_carry_items", "difficulty": "hard", "what_it_tests": "Carry danh sách URL qua nhiều lượt rồi gọi deduplicate."}
+    },
+    {
+      "id": "GM02_correct_strategy_to_title",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Loại nguồn trùng trong [{\"title\":\"Agent AI\",\"url\":\"https://a.vn/1\"},{\"title\":\"Agent AI\",\"url\":\"https://b.vn/2\"}]."},
+        {"role": "user", "content": "Ban đầu tôi định so theo URL."},
+        {"role": "user", "content": "Đổi lại: chỉ so theo tiêu đề."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "deduplicate", "args": {"strategy": "title"}}]},
+      "metadata": {"skill": "multiturn_strategy_correction", "difficulty": "hard", "what_it_tests": "Lượt cuối sửa strategy từ URL sang title phải được ưu tiên."}
+    },
+    {
+      "id": "GM03_tracking_url_strategy",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Nguồn thứ nhất là https://news.example/article?utm_source=facebook."},
+        {"role": "user", "content": "Nguồn thứ hai là https://news.example/article và có tiêu đề khác."},
+        {"role": "user", "content": "Bỏ trùng theo URL, bỏ qua tracking parameter."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "deduplicate", "args": {"strategy": "url"}}]},
+      "metadata": {"skill": "multiturn_tracking_url", "difficulty": "hard", "what_it_tests": "Tổng hợp URL từ các lượt và chọn strategy=url."}
+    },
+    {
+      "id": "GM04_cancel_deduplicate_format_only",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tôi có danh sách [{\"title\":\"A\",\"url\":\"https://a.vn\"},{\"title\":\"B\",\"url\":\"https://b.vn\"}]."},
+        {"role": "user", "content": "Tôi từng muốn kiểm tra trùng."},
+        {"role": "user", "content": "Không cần bỏ trùng nữa, chỉ format dạng thread."}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "format", "args": {"template": "thread"}}]},
+      "metadata": {"skill": "multiturn_cancel_deduplicate", "difficulty": "hard", "what_it_tests": "Ý định cuối hủy deduplicate và chuyển sang format thread."}
+    },
+    {
+      "id": "GM05_missing_items_clarify",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Giúp tôi bỏ các nguồn nghiên cứu trùng nhau."},
+        {"role": "user", "content": "Tôi muốn so cả URL lẫn tiêu đề."},
+        {"role": "user", "content": "Danh sách thì tôi chưa gửi."}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "multiturn_missing_items", "difficulty": "hard", "what_it_tests": "Thiếu items bắt buộc thì hỏi người dùng, không gọi deduplicate với danh sách đoán."}
+    }
+  ]
 }
