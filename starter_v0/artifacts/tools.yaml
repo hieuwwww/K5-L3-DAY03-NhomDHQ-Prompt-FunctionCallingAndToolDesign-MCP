@@ -123,3 +123,27 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
+
+  # ---------------- Team tool: Nguyễn Công Quân ----------------
+  - name: deduplicate
+    description: "Loại bỏ các kết quả nghiên cứu trùng nhau trong danh sách đã thu thập, dựa trên URL chuẩn hóa hoặc tiêu đề. Dùng sau lookup/fetch/social tools khi người dùng yêu cầu gộp nguồn, bỏ kết quả trùng hoặc làm sạch danh sách; không dùng để tìm dữ liệu mới, đọc URL hay định dạng bản tin."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách kết quả đã có; mỗi phần tử là object và nên có title hoặc url."
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+        strategy:
+          type: string
+          enum: [url_or_title, url, title]
+          default: url_or_title
+          description: "Tiêu chí nhận diện trùng: URL hoặc tiêu đề, chỉ URL, hoặc chỉ tiêu đề."
+      required: [items]
