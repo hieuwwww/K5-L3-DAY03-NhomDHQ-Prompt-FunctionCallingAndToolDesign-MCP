@@ -13,7 +13,7 @@
 |---:|---|---|---|---|
 | 1 | Bùi Quang Hiếu | 2A202603639 | Agent & eval | (tự điền) |
 | 2 | Nguyễn Công Quân | 2A202603675 | Tool & kiểm thử | nguyencongquana2 |
-| 3 | Nguyễn Văn Đăng | 2A202603371 | UI & demo | (tự điền) |
+| 3 | Nguyễn Văn Đăng | 2A202603371 | UI & demo | nguyenvandang2201 |
 
 ## Phân công công việc
 
@@ -88,19 +88,25 @@ Mỗi thành viên tự cập nhật mục của mình; chỉ ghi đóng góp v�
 
 **Đóng góp cụ thể:**
 
-- Dựng UI Streamlit `starter_v0/app.py`, dùng chung vòng lặp tool với `chat.py`: chọn provider/model/version, hiển thị tool đã gọi kèm args và kết quả, báo trạng thái thiếu API key (không hiện giá trị key), lưu transcript cùng format với `chat.py` và cho tải transcript JSON.
-- Viết `REPORT.md` Phần A: mô tả agent, bảng 10 tool, 6 câu hỏi mẫu, cách chạy UI và mở link public bằng Cloudflare Tunnel; điền dòng UI ở mục B5.
-- Viết `starter_v0/scripts/report_tables.py` để sinh bảng B1–B4 của Phần B từ `version_log.csv`, `runs/*.json`, `eval_group.json` và `transcripts/`.
-- Thêm `streamlit` vào `requirements.txt`.
-- Thêm provider DeepSeek (`providers/deepseek_provider.py`, `--provider deepseek`): tắt thinking mode để `tool_choice="required"` của eval không bị lỗi 400; preflight pass với `deepseek-flash` và `deepseek-v4-pro`.
-- Chạy chat live bằng DeepSeek (5 lượt qua `chat.py`, 2 lượt qua UI) và điền bảng B4 kèm nhận xét: phát hiện agent v0 tự đoán tài khoản `sama` thay vì hỏi lại, và gọi `send(confirmed=true)` mà không xin xác nhận.
+- **UI Streamlit** (`starter_v0/app.py`): dùng chung vòng lặp tool với `chat.py`; chọn provider/model/version; hiển thị tool đã gọi kèm args và kết quả; báo key nào còn thiếu (không hiện giá trị key); lưu transcript cùng format với `chat.py` và cho tải transcript JSON.
+- **Provider DeepSeek** (`providers/deepseek_provider.py`, `--provider deepseek`): tắt thinking mode vì chế độ này trả lỗi 400 với `tool_choice="required"` mà eval dùng; preflight pass với `deepseek-flash` và `deepseek-v4-pro`.
+- **Chat live:** chạy cùng 5 lượt hỏi trên v0 và v3, cộng 2 lượt qua UI. So sánh cho thấy hai lỗi nặng của v0 (tự đoán tài khoản `sama`, tự gọi `send(confirmed=true)`) đã hết ở v3.
+- **Eval bổ sung trên v3:** eval nhóm 10/10 PASS, eval mở rộng 6/10 (phát hiện agent gọi `policy` thừa và chọn sai `policy_area`).
+- **Sửa 2 bug trong code có sẵn**, mỗi bug kèm bằng chứng:
+  - `tools/send/tool.py`: guardrail coi `confirmed="false"`, `"yes"`, `1` là đã xác nhận. Viết regression test (code cũ gửi tin ở 4/5 trường hợp), sửa thành `confirmed is not True`.
+  - `versioning.py`: hash prompt khác nhau giữa Windows (CRLF) và macOS/Linux; chuẩn hoá xuống dòng trước khi băm để `artifact_version` thống nhất trên mọi máy.
+- **Report:** viết Phần A (mô tả agent, bảng 11 tool, câu hỏi mẫu, cách chạy UI và tunnel) và toàn bộ Phần B (B1–B7); viết `scripts/report_tables.py` để sinh bảng B1–B4 từ log.
 
 **Bằng chứng:**
 
-- `starter_v0/app.py`, `starter_v0/providers/deepseek_provider.py`, `starter_v0/scripts/report_tables.py`, `starter_v0/artifacts/REPORT.md` (Phần A, B4, B5).
-- Transcript chat live (v0, DeepSeek): `starter_v0/transcripts/v0_deepseek_20261110T142834839230.transcript.json` (chat.py, 5 lượt), `starter_v0/transcripts/v0_deepseek_ui_20261110T142953447844.transcript.json` (UI, 2 lượt).
-- Link dùng thử: (bổ sung link trycloudflare khi demo).
+- Code: `starter_v0/app.py`, `starter_v0/providers/deepseek_provider.py`, `starter_v0/scripts/report_tables.py`, `starter_v0/versioning.py`, `starter_v0/tools/send/tool.py`, `starter_v0/tests/test_tools_todo.py` (`test_send_only_accepts_boolean_true_as_confirmation`).
+- Run eval v3: `starter_v0/runs/v3_B_group_deepseek_20261110T225728735212.json`, `starter_v0/runs/v3_B_extension_deepseek_20261110T225746086818.json`.
+- Transcript chat live: `starter_v0/transcripts/v0_deepseek_20261110T142834839230.transcript.json` (v0, 5 lượt), `starter_v0/transcripts/v3_deepseek_20261110T230446456847.transcript.json` (v3, 5 lượt), `starter_v0/transcripts/v0_deepseek_ui_20261110T142953447844.transcript.json` (UI, 2 lượt).
+- Report: `starter_v0/artifacts/REPORT.md`.
 
 **Điều mình học được từ phần nhóm:**
 
-- (thành viên tự điền)
+- **Eval và live chat bổ sung cho nhau.** Base eval cho biết v3 sửa được R10, nhưng chỉ khi chạy cùng một kịch bản trên v0 và v3 mới thấy rõ người dùng nhận được gì khác nhau, ví dụ agent tự đăng Telegram ở v0 so với hỏi xác nhận ở v3.
+- **Guardrail an toàn phải nằm trong code, không chỉ trong prompt.** Prompt v3 khiến model xin xác nhận, nhưng nếu model gửi `confirmed="false"` thì chỉ dòng kiểm tra trong `send` mới chặn được. Lỗi này eval không phát hiện được, unit test thì có.
+- **Đo lường phải tái lập được.** Cùng một prompt nhưng ra hai mã hash khác nhau chỉ vì ký tự xuống dòng khiến version log khó so sánh giữa các máy. Phải đảm bảo cách đo nhất quán trước khi tin vào số liệu.
+- **Không phải FAIL nào cũng là lỗi agent.** Với R12, agent hỏi lại nội dung là hợp lý nhưng vẫn bị chấm FAIL; với E01–E03, câu trả lời đúng nhưng có tool call thừa. Cần đọc log để tách lỗi của agent khỏi lỗi của tiêu chí chấm.

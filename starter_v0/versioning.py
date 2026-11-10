@@ -14,7 +14,8 @@ class ArtifactVersion:
 
 
 def file_hash(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    # Normalize CRLF -> LF so the same file hashes the same on Windows (git autocrlf) and macOS/Linux.
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def short_hash(value: str, length: int = 12) -> str:

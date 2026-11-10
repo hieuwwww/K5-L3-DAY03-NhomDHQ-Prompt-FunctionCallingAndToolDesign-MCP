@@ -1,0 +1,862 @@
+{
+  "run_id": "v3_B_group_deepseek_20261110T225728735212",
+  "version": "v3",
+  "artifact_version": "v3+p648d9581f048+tbcaa320d8a7c",
+  "prompt_hash": "648d9581f048d8f59a29426df55c5262c91a9b2d76e644d3f74e650c59ed7490",
+  "tools_hash": "bcaa320d8a7c7a9e9783214963ca48693d05144a46f38b825be1a50341f0bd77",
+  "phase": "B",
+  "suite": "group",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "system_prompt": "C:\\Users\\Admin\\K5-L3-DAY03-NhomDHQ-ResearchAgentToolEval\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "C:\\Users\\Admin\\K5-L3-DAY03-NhomDHQ-ResearchAgentToolEval\\starter_v0\\artifacts\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day04_v2_research_group_dhq",
+  "dataset_role": "group",
+  "description": "10 case của nhóm DHQ: 5 single-turn và 5 multi-turn, tập trung vào routing/arguments/boundary của tool deduplicate do Nguyễn Công Quân phụ trách.",
+  "generated_at": "2026-11-10T22:57:28",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 10,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G01_deduplicate_default",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "deduplicate_default",
+        "difficulty": "easy",
+        "what_it_tests": "Danh sách đã có và yêu cầu bỏ trùng phải route tới deduplicate, không gọi web."
+      },
+      "input": "Tôi có ba kết quả: [{\"title\":\"AI News\",\"url\":\"https://example.com/ai?utm_source=x\"},{\"title\":\"Bản sao\",\"url\":\"https://example.com/ai\"},{\"title\":\"Robotics\",\"url\":\"https://example.org/robot\"}]. Hãy bỏ các kết quả trùng nhau.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "items": [
+                {
+                  "title": "AI News",
+                  "url": "https://example.com/ai?utm_source=x"
+                },
+                {
+                  "title": "Bản sao",
+                  "url": "https://example.com/ai"
+                },
+                {
+                  "title": "Robotics",
+                  "url": "https://example.org/robot"
+                }
+              ],
+              "strategy": "url_or_title"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "deduplicate",
+          "args": {
+            "items": [
+              {
+                "title": "AI News",
+                "url": "https://example.com/ai?utm_source=x"
+              },
+              {
+                "title": "Bản sao",
+                "url": "https://example.com/ai"
+              },
+              {
+                "title": "Robotics",
+                "url": "https://example.org/robot"
+              }
+            ],
+            "strategy": "url_or_title"
+          },
+          "result": {
+            "tool": "deduplicate_results",
+            "strategy": "url_or_title",
+            "items": [
+              {
+                "title": "AI News",
+                "url": "https://example.com/ai?utm_source=x"
+              },
+              {
+                "title": "Robotics",
+                "url": "https://example.org/robot"
+              }
+            ],
+            "original_count": 3,
+            "unique_count": 2,
+            "removed_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "G02_deduplicate_by_url",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "deduplicate_url_strategy",
+        "difficulty": "medium",
+        "what_it_tests": "Cụm 'chỉ URL' phải map thành strategy=url."
+      },
+      "input": "Làm sạch danh sách nguồn này và chỉ coi là trùng khi URL giống nhau: [{\"title\":\"A\",\"url\":\"https://a.vn/post\"},{\"title\":\"A\",\"url\":\"https://b.vn/post\"}].",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "strategy": "url"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "items": [
+                {
+                  "title": "A",
+                  "url": "https://a.vn/post"
+                },
+                {
+                  "title": "A",
+                  "url": "https://b.vn/post"
+                }
+              ],
+              "strategy": "url"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "deduplicate",
+          "args": {
+            "items": [
+              {
+                "title": "A",
+                "url": "https://a.vn/post"
+              },
+              {
+                "title": "A",
+                "url": "https://b.vn/post"
+              }
+            ],
+            "strategy": "url"
+          },
+          "result": {
+            "tool": "deduplicate_results",
+            "strategy": "url",
+            "items": [
+              {
+                "title": "A",
+                "url": "https://a.vn/post"
+              },
+              {
+                "title": "A",
+                "url": "https://b.vn/post"
+              }
+            ],
+            "original_count": 2,
+            "unique_count": 2,
+            "removed_count": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03_deduplicate_by_title",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "deduplicate_title_strategy",
+        "difficulty": "medium",
+        "what_it_tests": "Cụm 'chỉ theo tiêu đề' phải map thành strategy=title."
+      },
+      "input": "Hai trang đăng cùng tiêu đề nhưng URL khác nhau. Hãy loại bản trùng chỉ theo tiêu đề trong danh sách [{\"title\":\"GPT mới\",\"url\":\"https://a.vn/1\"},{\"title\":\"GPT mới\",\"url\":\"https://b.vn/2\"}].",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "strategy": "title"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "items": [
+                {
+                  "title": "GPT mới",
+                  "url": "https://a.vn/1"
+                },
+                {
+                  "title": "GPT mới",
+                  "url": "https://b.vn/2"
+                }
+              ],
+              "strategy": "title"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "deduplicate",
+          "args": {
+            "items": [
+              {
+                "title": "GPT mới",
+                "url": "https://a.vn/1"
+              },
+              {
+                "title": "GPT mới",
+                "url": "https://b.vn/2"
+              }
+            ],
+            "strategy": "title"
+          },
+          "result": {
+            "tool": "deduplicate_results",
+            "strategy": "title",
+            "items": [
+              {
+                "title": "GPT mới",
+                "url": "https://a.vn/1"
+              }
+            ],
+            "original_count": 2,
+            "unique_count": 1,
+            "removed_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "G04_search_not_deduplicate",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "deduplicate_boundary_search",
+        "difficulty": "medium",
+        "what_it_tests": "Chưa có items và cần tìm dữ liệu mới thì dùng lookup, không dùng deduplicate."
+      },
+      "input": "Tìm trên web các tin AI mới trong hôm nay; tôi chưa có danh sách kết quả.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day",
+              "max_results": 8
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "AI",
+            "topic": "news",
+            "timeframe": "day",
+            "max_results": 8
+          },
+          "result": {
+            "tool": "web_search",
+            "error": "RuntimeError",
+            "message": "Missing TAVILY_API_KEY env var"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G05_format_not_deduplicate",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "deduplicate_boundary_format",
+        "difficulty": "medium",
+        "what_it_tests": "Đã xác nhận không trùng và chỉ cần trình bày thì dùng format, không gọi deduplicate."
+      },
+      "input": "Danh sách này đã được kiểm tra là không trùng: [{\"title\":\"Tin A\",\"url\":\"https://a.vn\"},{\"title\":\"Tin B\",\"url\":\"https://b.vn\"}]. Chỉ trình bày thành danh sách bullet.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "template": "bullets"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "items": [
+                {
+                  "title": "Tin A",
+                  "url": "https://a.vn"
+                },
+                {
+                  "title": "Tin B",
+                  "url": "https://b.vn"
+                }
+              ],
+              "template": "bullets"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "title": "Tin A",
+                "url": "https://a.vn"
+              },
+              {
+                "title": "Tin B",
+                "url": "https://b.vn"
+              }
+            ],
+            "template": "bullets"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "bullets",
+            "markdown": "- Tin A - [a.vn](https://a.vn)\n- Tin B - [b.vn](https://b.vn)",
+            "item_count": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "GM01_carry_items_then_deduplicate",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_deduplicate_carry_items",
+        "difficulty": "hard",
+        "what_it_tests": "Carry danh sách URL qua nhiều lượt rồi gọi deduplicate."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tôi có hai nguồn: https://example.com/post?utm_campaign=lab và https://example.com/post."
+        },
+        {
+          "role": "user",
+          "content": "Hai URL đó là toàn bộ danh sách, không cần tìm thêm."
+        },
+        {
+          "role": "user",
+          "content": "Hãy loại bản trùng giúp tôi."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "items": [
+                {
+                  "url": "https://example.com/post?utm_campaign=lab"
+                },
+                {
+                  "url": "https://example.com/post"
+                }
+              ],
+              "strategy": "url"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "deduplicate",
+          "args": {
+            "items": [
+              {
+                "url": "https://example.com/post?utm_campaign=lab"
+              },
+              {
+                "url": "https://example.com/post"
+              }
+            ],
+            "strategy": "url"
+          },
+          "result": {
+            "tool": "deduplicate_results",
+            "strategy": "url",
+            "items": [
+              {
+                "url": "https://example.com/post?utm_campaign=lab"
+              }
+            ],
+            "original_count": 2,
+            "unique_count": 1,
+            "removed_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "GM02_correct_strategy_to_title",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_strategy_correction",
+        "difficulty": "hard",
+        "what_it_tests": "Lượt cuối sửa strategy từ URL sang title phải được ưu tiên."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Loại nguồn trùng trong [{\"title\":\"Agent AI\",\"url\":\"https://a.vn/1\"},{\"title\":\"Agent AI\",\"url\":\"https://b.vn/2\"}]."
+        },
+        {
+          "role": "user",
+          "content": "Ban đầu tôi định so theo URL."
+        },
+        {
+          "role": "user",
+          "content": "Đổi lại: chỉ so theo tiêu đề."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "strategy": "title"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "items": [
+                {
+                  "title": "Agent AI",
+                  "url": "https://a.vn/1"
+                },
+                {
+                  "title": "Agent AI",
+                  "url": "https://b.vn/2"
+                }
+              ],
+              "strategy": "title"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "deduplicate",
+          "args": {
+            "items": [
+              {
+                "title": "Agent AI",
+                "url": "https://a.vn/1"
+              },
+              {
+                "title": "Agent AI",
+                "url": "https://b.vn/2"
+              }
+            ],
+            "strategy": "title"
+          },
+          "result": {
+            "tool": "deduplicate_results",
+            "strategy": "title",
+            "items": [
+              {
+                "title": "Agent AI",
+                "url": "https://a.vn/1"
+              }
+            ],
+            "original_count": 2,
+            "unique_count": 1,
+            "removed_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "GM03_tracking_url_strategy",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_tracking_url",
+        "difficulty": "hard",
+        "what_it_tests": "Tổng hợp URL từ các lượt và chọn strategy=url."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Nguồn thứ nhất là https://news.example/article?utm_source=facebook."
+        },
+        {
+          "role": "user",
+          "content": "Nguồn thứ hai là https://news.example/article và có tiêu đề khác."
+        },
+        {
+          "role": "user",
+          "content": "Bỏ trùng theo URL, bỏ qua tracking parameter."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "strategy": "url"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "deduplicate",
+            "args": {
+              "items": [
+                {
+                  "url": "https://news.example/article?utm_source=facebook"
+                },
+                {
+                  "url": "https://news.example/article",
+                  "title": "Tiêu đề khác"
+                }
+              ],
+              "strategy": "url"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "deduplicate",
+          "args": {
+            "items": [
+              {
+                "url": "https://news.example/article?utm_source=facebook"
+              },
+              {
+                "url": "https://news.example/article",
+                "title": "Tiêu đề khác"
+              }
+            ],
+            "strategy": "url"
+          },
+          "result": {
+            "tool": "deduplicate_results",
+            "strategy": "url",
+            "items": [
+              {
+                "url": "https://news.example/article?utm_source=facebook"
+              }
+            ],
+            "original_count": 2,
+            "unique_count": 1,
+            "removed_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "GM04_cancel_deduplicate_format_only",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_cancel_deduplicate",
+        "difficulty": "hard",
+        "what_it_tests": "Ý định cuối hủy deduplicate và chuyển sang format thread."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tôi có danh sách [{\"title\":\"A\",\"url\":\"https://a.vn\"},{\"title\":\"B\",\"url\":\"https://b.vn\"}]."
+        },
+        {
+          "role": "user",
+          "content": "Tôi từng muốn kiểm tra trùng."
+        },
+        {
+          "role": "user",
+          "content": "Không cần bỏ trùng nữa, chỉ format dạng thread."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "template": "thread"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "items": [
+                {
+                  "title": "A",
+                  "url": "https://a.vn"
+                },
+                {
+                  "title": "B",
+                  "url": "https://b.vn"
+                }
+              ],
+              "template": "thread"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "title": "A",
+                "url": "https://a.vn"
+              },
+              {
+                "title": "B",
+                "url": "https://b.vn"
+              }
+            ],
+            "template": "thread"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "thread",
+            "markdown": "1/ A - [a.vn](https://a.vn)\n\n2/ B - [b.vn](https://b.vn)",
+            "item_count": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "GM05_missing_items_clarify",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_missing_items",
+        "difficulty": "hard",
+        "what_it_tests": "Thiếu items bắt buộc thì hỏi người dùng, không gọi deduplicate với danh sách đoán."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Giúp tôi bỏ các nguồn nghiên cứu trùng nhau."
+        },
+        {
+          "role": "user",
+          "content": "Tôi muốn so cả URL lẫn tiêu đề."
+        },
+        {
+          "role": "user",
+          "content": "Danh sách thì tôi chưa gửi."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn vui lòng gửi danh sách nguồn nghiên cứu cần lọc trùng (kèm URL và tiêu đề nếu có) để tôi loại bỏ các mục trùng theo cả URL lẫn tiêu đề nhé.",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn vui lòng gửi danh sách nguồn nghiên cứu cần lọc trùng (kèm URL và tiêu đề nếu có) để tôi loại bỏ các mục trùng theo cả URL lẫn tiêu đề nhé.",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn vui lòng gửi danh sách nguồn nghiên cứu cần lọc trùng (kèm URL và tiêu đề nếu có) để tôi loại bỏ các mục trùng theo cả URL lẫn tiêu đề nhé.",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    }
+  ]
+}
