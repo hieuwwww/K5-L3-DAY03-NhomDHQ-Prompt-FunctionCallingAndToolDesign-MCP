@@ -21,6 +21,13 @@ Alternatives:
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 GEMINI_API_KEY=...
+DEEPSEEK_API_KEY=...
+```
+
+DeepSeek (`--provider deepseek`): model mặc định `deepseek-flash`, đổi bằng `--model deepseek-v4-pro` hoặc `DEEPSEEK_MODEL`. Provider tự tắt chế độ thinking vì thinking mode trả lỗi 400 với `tool_choice="required"` mà `run_eval.py` dùng.
+
+```bash
+python scripts/preflight_provider.py --provider deepseek
 ```
 
 Preflight:
