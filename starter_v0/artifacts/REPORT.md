@@ -6,9 +6,9 @@
 
 ## Team
 
-- Team:
-- Members:
-- Provider/model:
+- Team: NhomDHQ
+- Members: Bùi Quang Hiếu (Agent & eval), (Thành viên 2 — Tool & kiểm thử), Nguyễn Văn Đăng (UI & demo)
+- Provider/model: OpenRouter · `openai/gpt-4o-mini` (mặc định của starter, cập nhật nếu nhóm đổi model)
 
 ---
 
@@ -16,37 +16,52 @@
 
 ## A1. Agent này làm được gì
 
-> 1–2 câu mô tả agent dùng để làm gì (cho team khác hiểu nhanh).
-
-Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc URL, tổng hợp thành digest, và gửi lên Telegram khi được xác nhận."
+Research agent tiếng Việt: tìm tin trên web, xem tweet của một tài khoản hoặc theo chủ đề, đọc nội dung một URL, tìm và đọc paper arXiv, tra cứu policy nội bộ công ty, rồi tổng hợp thành bản tin có nguồn. Khi thiếu thông tin (không nói tài khoản nào, không có link), agent hỏi lại thay vì đoán. Trước khi đăng lên Telegram, agent luôn xin xác nhận.
 
 **Link dùng thử (deploy):**
 
-> Dán link public để team khác mở thử ngay. Cách deploy nhanh bằng Cloudflare Tunnel xem README. Nếu deploy Vercel/Streamlit Cloud thì dán link đó.
->
-> URL: 
+> URL: (dán link `https://<...>.trycloudflare.com` khi chạy demo)
+
+Cách chạy UI (từ `starter_v0/`):
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py                              # http://localhost:8501
+cloudflared tunnel --url http://localhost:8501    # in ra link public trycloudflare.com
+```
+
+UI hiển thị tool agent đã chọn, args đã truyền và kết quả của từng tool. Mỗi lượt chat được lưu vào `transcripts/*.transcript.json`.
 
 ## A2. Tool agent có
 
-> Liệt kê các tool agent đang dùng (gồm tool mới nhóm tự thêm). Mỗi tool 1 dòng: tên + làm được gì.
-
 | Tên tool | Làm được gì | Tool mới nhóm thêm? |
 |---|---|---|
-| clarify | hỏi lại người dùng khi thiếu thông tin | không |
-|  |  |  |
-|  |  |  |
+| clarify | Hỏi lại người dùng khi thiếu thông tin hoặc cần xác nhận | không |
+| timeline | Lấy các tweet gần đây của **một tài khoản** (handle không có `@`) | không |
+| social_search | Tìm tweet **theo chủ đề/từ khóa**, sắp xếp `Latest` hoặc `Top` | không |
+| lookup | Tìm trên web (Tavily), có chế độ tin tức `news` và khoảng thời gian `day/week/month/year` | không |
+| fetch | Đọc nội dung một URL cụ thể (Firecrawl) | không |
+| format | Trình bày các tin đã thu thập thành bản tin markdown (brief, bullets, thread...) | không |
+| send | Đăng bản tin lên Telegram channel, chỉ khi người dùng đã xác nhận | không |
+| policy | Tra cứu policy nội bộ công ty (nguồn, trích dẫn, bảo mật, đăng bài, dùng tool) | không |
+| papers | Tìm paper trên arXiv | không |
+| paper_text | Tải PDF arXiv và trích text vài trang đầu | không |
+| (tool mới, thành viên 2 điền) |  | có |
 
 ## A3. Câu hỏi mẫu để thử
 
-> 3–5 câu hỏi/yêu cầu mẫu để team khác tự thử agent ngay.
-
-1.
-2.
-3.
+1. **"Tin AI hôm nay có gì nổi bật?"** → tìm tin web, chế độ tin tức, trong ngày.
+2. **"Cho mình các tweet phổ biến nhất về Claude"** → tìm tweet theo chủ đề, sắp xếp Top.
+3. **"Tóm tắt bài này giúp mình: https://www.anthropic.com/research"** → đọc đúng link đó.
+4. **"Theo policy công ty, tweet viral có được coi là fact đã xác nhận không?"** → tra policy nội bộ.
+5. **"Tóm tắt 5 tweet mới nhất giúp mình"** → agent phải **hỏi lại** muốn xem tài khoản nào.
+6. **"Đăng bản tin này lên Telegram giúp mình"** → agent phải **xin xác nhận** trước, không tự gửi.
 
 ---
 
 # PHẦN B — Chi tiết / Bằng chứng
+
+> Sinh bảng B1–B4 từ log thật: `python scripts/report_tables.py --output analysis/report_tables.md`, rồi dán vào các mục dưới đây. Cột "Fix" ở B2 nhóm tự viết.
 
 ## B1. Version Evidence
 
@@ -91,7 +106,7 @@ Only fill if your team did bonus.
 |---|---|---|---|
 | send (Telegram) |  |  |  |
 | arXiv/company policy |  |  |  |
-| UI |  |  |  |
+| UI (Streamlit) | `app.py`, `transcripts/*_ui_*.transcript.json` | Dùng chung vòng lặp tool với `chat.py`; hiển thị tool đã gọi, args và kết quả từng tool; lưu transcript cùng format với `chat.py`; báo lỗi model mà không crash | Link tunnel public dùng API key của nhóm, nên chỉ mở trong buổi demo; sidebar chỉ hiện key có hay không, không hiện giá trị; `send` vẫn cần `confirmed=true` |
 | Tool unit tests (`tests/`) | `pytest` output |  |  |
 
 Tool unit tests: số test đã viết, số bug tìm được trong tool có sẵn (nếu có), và một ví dụ lỗi mà unit test bắt được nhưng eval không bắt được.
