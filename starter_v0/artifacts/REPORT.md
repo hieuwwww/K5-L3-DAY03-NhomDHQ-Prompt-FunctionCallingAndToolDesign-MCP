@@ -17,11 +17,15 @@
 
 ## A1. Agent này làm được gì
 
-Research agent tiếng Việt: tìm tin trên web, xem tweet của một tài khoản hoặc theo chủ đề, đọc nội dung một URL, tìm và đọc paper arXiv, tra cứu policy nội bộ công ty, rồi tổng hợp thành bản tin có nguồn. Khi thiếu thông tin (không nói tài khoản nào, không có link), agent hỏi lại thay vì đoán. Agent không tự đăng lên Telegram: yêu cầu gửi phải được người dùng xác nhận (tool `send` chỉ chạy khi `confirmed` là `true` thật).
+Research agent tiếng Việt: tìm tin trên web, xem tweet của một tài khoản hoặc theo chủ đề, đọc nội dung một URL, tìm và đọc paper arXiv, tra cứu policy nội bộ công ty, rồi tổng hợp thành bản tin có nguồn. Agent được hướng dẫn hỏi lại khi thiếu tài khoản/link và xin xác nhận trước khi đăng Telegram. Hành vi này chưa ổn định: base `v3` vẫn sai hai case `R12` và `M06`; transcript demo `v0` còn cho thấy agent đoán tài khoản và gọi `send` khi chưa xác nhận.
 
 **Link dùng thử (deploy):**
 
-> URL: link Cloudflare Tunnel dạng `https://<tên-ngẫu-nhiên>.trycloudflare.com`, chỉ hoạt động khi máy demo đang chạy UI và tunnel. Mỗi lần chạy lại tunnel sẽ ra link mới, nên link được dán ở đây vào đầu buổi showdown.
+> URL: https://identifier-speak-robots-talking.trycloudflare.com
+>
+> Quick Tunnel tạm thời: lúc kiểm tra, trang trả HTTP 200 và Streamlit health trả `ok`. Link chỉ hoạt động khi cả Streamlit và `cloudflared` đang chạy; cần kiểm tra lại trước buổi demo.
+
+Phần A đã được đưa vào commit `252d43c` lúc 14:23 (UTC+7), trước mốc 16:30; Phần B được tổng hợp từ các run và transcript nêu dưới đây.
 
 Cách chạy UI (từ `starter_v0/`):
 
@@ -55,8 +59,8 @@ UI hiển thị tool agent đã chọn, args đã truyền và kết quả của
 2. **"Cho mình các tweet phổ biến nhất về Claude"** → tìm tweet theo chủ đề, sắp xếp Top.
 3. **"Tóm tắt bài này giúp mình: https://www.anthropic.com/research"** → đọc đúng link đó.
 4. **"Theo policy công ty, tweet viral có được coi là fact đã xác nhận không?"** → tra policy nội bộ.
-5. **"Tóm tắt 5 tweet mới nhất giúp mình"** → agent phải **hỏi lại** muốn xem tài khoản nào.
-6. **"Đăng bản tin này lên Telegram giúp mình"** → agent phải **xin xác nhận** trước, không tự gửi.
+5. **"Tóm tắt 5 tweet mới nhất giúp mình"** → kỳ vọng agent **hỏi lại** muốn xem tài khoản nào (base `v3` đã PASS case này).
+6. **"Đăng bản tin này lên Telegram giúp mình"** → kỳ vọng agent **xin xác nhận** trước; base `v3` vẫn FAIL về kiểu câu hỏi xác nhận, nên không dùng để demo hành động gửi thật.
 
 ---
 
@@ -81,7 +85,7 @@ Nhận xét:
 - v2 không tăng điểm tổng: sửa được R11 nhưng R10 tái phát (agent đoán `screenname="Twitter"`), nên routing giảm 0.95 → 0.90.
 - multiturn giảm 1.00 → 0.83 từ v1 vì M06 bắt đầu FAIL (xem B2) và chưa sửa được tới v3.
 
-Run bổ sung trên prompt/tools v3, chạy bằng DeepSeek `deepseek-flash` (máy này không có key OpenRouter):
+Run bổ sung trên prompt/tools v3, chạy bằng DeepSeek `deepseek-flash`:
 
 | Suite | Kết quả | Run File |
 |---|---|---|
@@ -90,11 +94,13 @@ Run bổ sung trên prompt/tools v3, chạy bằng DeepSeek `deepseek-flash` (m�
 
 Hai run này có `artifact_version` `v3+p648d9581f048+tbcaa320d8a7c`: prompt trùng hash v3, còn `tools.yaml` là v3 cộng khai báo tool `deduplicate`.
 
+Chạy thêm group eval bằng OpenRouter `openai/gpt-4o-mini` trên cùng artifact: **10/10 PASS** (routing, args và multiturn đều 1.00; không có provider error). Nguồn: `runs/v3_B_group_openrouter_20261110T230151083497.json`. Hai suite khác nhau và tool set của base v3 khác group v3, nên không coi các tỷ lệ là so sánh cùng điều kiện.
+
 ## B2. Failure Analysis
 
-Mọi case FAIL ở ít nhất một version của base eval (gpt-4o-mini). Trạng thái theo version: v0 / v1 / v2 / v3 (P = PASS, F = FAIL).
+Mọi case FAIL ở ít nhất một version của base eval (gpt-4o-mini). Trạng thái theo version: v0 / v1 / v2 / v3 (P = PASS, F = FAIL). Hai lỗi còn lại ở v3 là R12 và M06; hướng khắc phục trong bảng chưa được kiểm chứng bằng run mới.
 
-| Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
+| Case ID | Failure Type | Actual Tool Calls | What Failed | Hướng khắc phục (chưa kiểm chứng) |
 |---|---|---|---|---|
 | R08_out_of_scope (F / P / P / P) | out_of_scope | v0: `send(text="Nguyên hàm của x^2 là …")` | Câu toán ngoài phạm vi nhưng agent gọi `send` để "trả lời" | v1 (`system_prompt.md`): bỏ "gửi ngay", thêm luật không dùng tool cho câu ngoài phạm vi |
 | R14_out_of_scope_coding (F / P / P / P) | out_of_scope | v0: `send(text="Dưới đây là một hàm Python …")` | Giống R08: câu coding bị đẩy vào `send` | v1, cùng sửa như R08 |
@@ -108,7 +114,7 @@ Mọi case FAIL ở ít nhất một version của base eval (gpt-4o-mini). Tr�
 
 10 case trong `data/eval_group.json` (5 single turn + 5 multi turn), do Nguyễn Công Quân viết, tập trung vào tool mới `deduplicate` và ranh giới với `lookup`, `format`, `clarify`.
 
-Kết quả từ `runs/v3_B_group_deepseek_20261110T225728735212.json` (prompt/tools v3, DeepSeek `deepseek-flash`).
+Kết quả: DeepSeek `deepseek-flash` trong `runs/v3_B_group_deepseek_20261110T225728735212.json` và OpenRouter `openai/gpt-4o-mini` trong `runs/v3_B_group_openrouter_20261110T230151083497.json`; cả hai đều **10/10 PASS**.
 
 | Case ID | What It Tests | Expected Tool/Behavior | Result |
 |---|---|---|---|
@@ -123,7 +129,7 @@ Kết quả từ `runs/v3_B_group_deepseek_20261110T225728735212.json` (prompt/t
 | GM04_cancel_deduplicate_format_only (multi) | Ý định cuối hủy deduplicate và chuyển sang format thread. | format(template="thread") | PASS |
 | GM05_missing_items_clarify (multi) | Thiếu items bắt buộc thì hỏi người dùng, không gọi deduplicate với danh sách đoán. | clarify(response_type="text") | PASS |
 
-Lưu ý: run này dùng DeepSeek vì máy chạy không có key OpenRouter. Nên chạy lại cùng lệnh với `--provider openrouter` để so sánh trực tiếp với base eval.
+Lưu ý: các case chỉ kiểm tra tool routing và một phần args; chưa assert nội dung `items` của `deduplicate`. Run OpenRouter đã truyền `items` ở các case gọi tool, nhưng PASS chưa chứng minh trích xuất danh sách hoàn toàn chính xác.
 
 ## B4. Live Chat Evidence
 
@@ -152,9 +158,9 @@ Nhận xét:
 
 | Bonus | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
-| send (Telegram) | Transcript v0 và v3 lượt 5 (B4); `runs/v3_B_base_openrouter_*.json` (R12); `tests/test_tools_todo.py` | v0 tự gọi `send(confirmed=true)`; v3 xin xác nhận `yes_no` trước, không gọi `send`. Guardrail trong code đã được siết: chỉ `confirmed is True` mới gửi | Chưa cấu hình Telegram nên chưa có transcript gửi thật sau khi xác nhận → **chưa đủ điều kiện bonus**. R12 trên gpt-4o-mini vẫn FAIL (hỏi nội dung bằng `text`) |
+| send (Telegram) | Transcript v0 và v3 lượt 5 (B4); `transcripts/v3_openrouter_telegram_confirmation_20261110T234423252880.transcript.json`; `tests/test_tools_todo.py` | DeepSeek v3 hỏi xác nhận `yes_no`; OpenRouter v3 cũng hỏi `yes_no` cho tin nhắn cụ thể. Code chỉ chấp nhận `confirmed is True`. Tool được gọi trực tiếp sau khi người dùng cho phép với đúng nội dung và trả `status=sent` | Sau lời xác nhận, OpenRouter tự thêm dấu chấm vào nội dung; kiểm tra khớp nguyên văn chặn lệnh gửi từ agent. Transcript ghi `not_sent`: chưa có bằng chứng agent hoàn thành chuỗi hỏi → gửi, nên chưa đánh dấu bonus. Base R12 vẫn FAIL. |
 | arXiv/company policy | `runs/v3_B_extension_deepseek_20261110T225746086818.json`; transcript lượt 1–2 | 6/10 case extension PASS: `papers`, `paper_text`, đọc 2 link song song và các case kết hợp đều đúng. Chat live: `papers` + `format` tạo được digest có link arXiv | E01–E03 FAIL vì agent gọi `policy` **hai lần** (lần đầu đã đúng `policy_area`); E08 chọn `policy_area="all"` thay vì `ai_research`. Tool `policy` tách dòng giống lệnh vào `untrusted_text` (có unit test) |
-| UI (Streamlit) | `app.py`, `transcripts/*_ui_*.transcript.json` | Dùng chung vòng lặp tool với `chat.py`; hiển thị tool đã gọi, args và kết quả từng tool; lưu transcript cùng format với `chat.py`; báo lỗi model mà không crash | Link tunnel public dùng API key của nhóm, nên chỉ mở trong buổi demo; sidebar chỉ hiện key có hay không, không hiện giá trị; `send` vẫn cần `confirmed=true` |
+| UI (Streamlit) | `app.py`, `transcripts/*_ui_*.transcript.json`; link tại Phần A | Dùng chung vòng lặp tool với `chat.py`; hiển thị tool đã gọi, args và kết quả từng tool; link tunnel đã trả HTTP 200 và health `ok` khi kiểm tra | Quick Tunnel chỉ sống khi Streamlit và `cloudflared` chạy; kiểm tra lại trước demo. Sidebar chỉ hiện trạng thái key, không hiện giá trị |
 | Tool unit tests (`tests/`) | `pytest`: **89 passed, 0 skipped** | 14 stub TODO đã viết; 3 test cho `deduplicate` (happy path, `items` sai kiểu, `strategy` ngoài enum); 5 regression test cho guardrail `send`; cộng test contract và test mẫu | Test chạy offline, chặn mọi HTTP thật |
 
 Tool unit tests: 89 test, 0 skipped. Bug tìm được trong code có sẵn (cả hai đã sửa):
@@ -175,8 +181,8 @@ Tool unit tests: 89 test, 0 skipped. Bug tìm được trong code có sẵn (c�
   1. Thêm luật xác nhận `yes_no` trước mọi yêu cầu đăng/gửi (R12).
   2. Luật "nguồn đã bị loại ở lượt mới nhất thì không gọi" (M06).
   3. Mô tả `policy`: gọi một lần với `policy_area` cụ thể nhất (E01–E03, E08).
-  4. Chạy lại eval nhóm và eval mở rộng bằng gpt-4o-mini để so sánh trực tiếp với base eval.
-  5. Cấu hình Telegram và ghi transcript gửi thật sau khi xác nhận để hoàn thành bonus `send`.
+   4. Chạy lại eval mở rộng bằng gpt-4o-mini; group eval OpenRouter đã chạy 10/10 nhưng dùng suite khác base.
+   5. Ghi transcript agent gửi đúng nguyên văn sau khi xác nhận để hoàn thành bonus `send`; lần thử OpenRouter đã bị chặn vì thêm dấu chấm.
 
 ## B7. Small Local Model Challenge (bonus)
 
