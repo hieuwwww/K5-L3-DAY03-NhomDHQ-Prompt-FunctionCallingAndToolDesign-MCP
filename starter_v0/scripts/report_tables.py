@@ -23,7 +23,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def cell(value: Any, limit: int = 120) -> str:
+def cell(value: Any, limit: int = 160) -> str:
     text = "" if value is None else str(value)
     text = " ".join(text.split()).replace("|", "\\|")
     return text if len(text) <= limit else text[: limit - 3] + "..."
@@ -37,10 +37,21 @@ def table(headers: list[str], rows: list[list[Any]]) -> str:
     return "\n".join(lines)
 
 
+def short_arg(value: Any) -> str:
+    """Shorten long args (digest text, item lists) so small args like confirmed=true stay visible."""
+    if isinstance(value, list):
+        return f"[{len(value)} items]"
+    text = json.dumps(value, ensure_ascii=False)
+    return text if len(text) <= 40 else text[:37] + '..."'
+
+
 def calls_text(calls: list[dict[str, Any]]) -> str:
     if not calls:
         return "(no tool)"
-    return "; ".join(f"{c.get('name')}({json.dumps(c.get('args', {}), ensure_ascii=False)})" for c in calls)
+    return "; ".join(
+        f"{c.get('name')}({', '.join(f'{k}={short_arg(v)}' for k, v in (c.get('args') or {}).items())})"
+        for c in calls
+    )
 
 
 def expected_text(expect: dict[str, Any]) -> str:

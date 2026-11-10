@@ -22,7 +22,7 @@ import streamlit as st
 import yaml
 
 from chat import ARTIFACTS_DIR, ROOT, now_iso, run_model_tool_loop, safe_slug, trim_history, write_transcript
-from providers import make_provider
+from providers import PROVIDER_NAMES, make_provider
 from tools import load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
 
@@ -30,12 +30,12 @@ SYSTEM_PROMPT_PATH = ARTIFACTS_DIR / "system_prompt.md"
 TOOLS_PATH = ARTIFACTS_DIR / "tools.yaml"
 TRANSCRIPTS_DIR = ROOT / "transcripts"
 
-PROVIDERS = ["openrouter", "openai", "anthropic", "gemini", "ollama"]
 PROVIDER_KEYS = {
     "openrouter": "OPENROUTER_API_KEY",
     "openai": "OPENAI_API_KEY",
     "anthropic": "ANTHROPIC_API_KEY",
     "gemini": "GEMINI_API_KEY",
+    "deepseek": "DEEPSEEK_API_KEY",
     "ollama": None,  # local server, no key
 }
 # These have a working default in the tool code, so a missing value is not a problem.
@@ -205,7 +205,10 @@ def render_assistant(message: dict[str, Any]) -> None:
 def render_sidebar() -> Settings:
     with st.sidebar:
         st.header("Cài đặt")
-        provider = st.selectbox("Provider", PROVIDERS, index=0)
+        # Preselect the first provider that has a key, so the demo works without touching settings.
+        with_key = [name for name in PROVIDER_NAMES if PROVIDER_KEYS.get(name) and os.getenv(PROVIDER_KEYS[name])]
+        default_index = PROVIDER_NAMES.index(with_key[0]) if with_key else 0
+        provider = st.selectbox("Provider", PROVIDER_NAMES, index=default_index)
         model = st.text_input(
             "Model",
             value="",

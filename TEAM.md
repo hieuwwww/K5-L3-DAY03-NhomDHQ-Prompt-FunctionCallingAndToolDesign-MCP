@@ -85,11 +85,13 @@ Mỗi thành viên tự cập nhật mục của mình; chỉ ghi đóng góp v�
 - Viết `REPORT.md` Phần A: mô tả agent, bảng 10 tool, 6 câu hỏi mẫu, cách chạy UI và mở link public bằng Cloudflare Tunnel; điền dòng UI ở mục B5.
 - Viết `starter_v0/scripts/report_tables.py` để sinh bảng B1–B4 của Phần B từ `version_log.csv`, `runs/*.json`, `eval_group.json` và `transcripts/`.
 - Thêm `streamlit` vào `requirements.txt`.
+- Thêm provider DeepSeek (`providers/deepseek_provider.py`, `--provider deepseek`): tắt thinking mode để `tool_choice="required"` của eval không bị lỗi 400; preflight pass với `deepseek-flash` và `deepseek-v4-pro`.
+- Chạy chat live bằng DeepSeek (5 lượt qua `chat.py`, 2 lượt qua UI) và điền bảng B4 kèm nhận xét: phát hiện agent v0 tự đoán tài khoản `sama` thay vì hỏi lại, và gọi `send(confirmed=true)` mà không xin xác nhận.
 
 **Bằng chứng:**
 
-- `starter_v0/app.py`, `starter_v0/scripts/report_tables.py`, `starter_v0/artifacts/REPORT.md` (Phần A, B5).
-- Transcript chat live: (bổ sung đường dẫn `transcripts/*.transcript.json` sau khi chạy demo).
+- `starter_v0/app.py`, `starter_v0/providers/deepseek_provider.py`, `starter_v0/scripts/report_tables.py`, `starter_v0/artifacts/REPORT.md` (Phần A, B4, B5).
+- Transcript chat live (v0, DeepSeek): `starter_v0/transcripts/v0_deepseek_20261110T142834839230.transcript.json` (chat.py, 5 lượt), `starter_v0/transcripts/v0_deepseek_ui_20261110T142953447844.transcript.json` (UI, 2 lượt).
 - Link dùng thử: (bổ sung link trycloudflare khi demo).
 
 **Điều mình học được từ phần nhóm:**

@@ -17,11 +17,14 @@ class OpenAIProvider:
         base_url: str | None = None,
         default_model: str = "gpt-4o-mini",
         api_key_default: str | None = None,
+        extra_body: dict[str, Any] | None = None,
     ) -> None:
         self.api_key_env = api_key_env
         self.api_key_default = api_key_default
         self.base_url = base_url
         self.default_model = default_model
+        # Vendor-specific request fields for OpenAI-compatible APIs (e.g. DeepSeek "thinking").
+        self.extra_body = extra_body
 
     def complete(
         self,
@@ -51,6 +54,8 @@ class OpenAIProvider:
             kwargs["tools"] = tools
         if tool_choice is not None:
             kwargs["tool_choice"] = tool_choice
+        if self.extra_body:
+            kwargs["extra_body"] = self.extra_body
 
         resp = client.chat.completions.create(**kwargs)
         msg = resp.choices[0].message
