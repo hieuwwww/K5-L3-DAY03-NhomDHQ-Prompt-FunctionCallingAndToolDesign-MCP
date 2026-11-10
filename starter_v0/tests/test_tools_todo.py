@@ -89,6 +89,20 @@ def test_send_confirmed_without_env_returns_error_and_no_request(fake_http) -> N
     assert calls == []
 
 
+@pytest.mark.parametrize("confirmed", ["false", "true", "yes", 1, None])
+def test_send_only_accepts_boolean_true_as_confirmation(monkeypatch, fake_http, confirmed) -> None:
+    # Regression: `if not confirmed` treated any non-empty string (even "false") as confirmed.
+    # Models sometimes send booleans as strings, so only a real True may trigger a post.
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "@test")
+    calls = fake_http(FakeResponse({"ok": True}))
+
+    result = TOOL_FUNCTIONS["send"](text="Bản tin", confirmed=confirmed)
+
+    assert result["status"] == "needs_confirmation"
+    assert calls == []
+
+
 # ---------------- lookup ----------------
 
 def test_lookup_without_timeframe_omits_time_range(monkeypatch, fake_http) -> None:
